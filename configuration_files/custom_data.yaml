@@ -4,7 +4,7 @@ train: ../data/train
 val: ../data/val   
 
 # number of classes
-nc: 3
+nc: 2
 
 # class names
-names: [ "none", "ct_body","t_body"]
+names: ["ct_body","t_body"]
