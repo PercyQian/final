@@ -8,14 +8,12 @@ USE_DXCAM = True
 import dxcam
 
 def main():
-    weights = "model-results/csgo_char_scratch/weights/best.pt"  # 改成你的权重
+    weights = "model-results/csgo_char_scratch/weights/best.pt"
     conf_thres = 0.25
-    device = "0"  # GPU 0；无GPU可用 "cpu"
-    # 采集区域：None 全屏；或指定矩形 {"top":y,"left":x,"width":w,"height":h}
+    device = "0"  # GPU 0
     region = None
 
     model = YOLO(weights)
-    # 提前 warmup
     _ = model.predict(np.zeros((640, 640, 3), dtype=np.uint8), conf=conf_thres, device=device, verbose=False)
 
     save_dir = Path("runs/screen_infer")
@@ -38,12 +36,12 @@ def main():
         if frame is None:
             continue
 
-        # YOLO 推理（numpy BGR）
+        # YOLO
         results = model.predict(source=frame, conf=conf_thres, device=device, verbose=False)
         res = results[0]
-        annotated = res.plot()  # 已叠加框/标签的 BGR
+        annotated = res.plot()
 
-        # 显示
+        # show
         if fps_hist:
             fps_txt = f"FPS: {1/np.mean(fps_hist):.1f}"
             cv2.putText(annotated, fps_txt, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2, cv2.LINE_AA)
@@ -53,11 +51,11 @@ def main():
         if key == ord('q'):
             break
         if key == ord('s'):
-            # 保存截图与预测为 YOLO 标签（弱标注）
+            # save screenshot with YOLO labels
             img_path = save_dir / f"frame_{frame_id:06d}.jpg"
             lbl_path = save_dir / f"frame_{frame_id:06d}.txt"
             cv2.imwrite(str(img_path), frame)
-            # 将预测框保存为 YOLO 格式 (cls cx cy w h，相对坐标)
+            # save predictions as YOLO format (cls cx cy w h, relative coordinates)
             if res.boxes is not None and len(res.boxes) > 0:
                 h, w = frame.shape[:2]
                 lines = []
